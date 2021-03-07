@@ -43,12 +43,14 @@ SOFTWARE.
 -- ** Getting services 
 local HttpService = game:GetService("HttpService")
 local DataStoreService = game:GetService("DataStoreService")
+local TeleportService = game:GetService("TeleportService")
 
 --[[ 
 List of functions:
  [1] Server creating
  [2] Getting server data
  [3] Getting custom data
+ [4] Connecting player to server
 --]]
 
 local ServerSystem = {}
@@ -59,8 +61,11 @@ local ServerSystem = {}
 Creates new server
 --]]
 function ServerSystem.Create(name, description, ownerid, maxslots, placeID, password, CustomData) -- Creating new server, make sure this is not spamable, provide your own cooldown!!!
-	if name or description or ownerid or maxslots or placeID == nil then
-		return "[ServerSystem]: Error 101, missing arguments when creating server"
+	if name == nil or description == nil or ownerid == nil or maxslots == nil or placeID == nil then -- Checking if there isn't missing input
+		return 000101
+	end
+	if password == nil then
+		password = 0
 	end
 	local ServerStats = DataStoreService:GetDataStore("ServerSystem_ServerSTATS") -- Connects to global data datastore (Stores server number of servers and other cool stuff)
 	local success, ServerNumber = pcall(function() -- Soo everything doesn't error when datastore stops working.
@@ -105,7 +110,7 @@ end
 --]]
 function ServerSystem.GetServerData(SID)
 	if SID == nil or tonumber(SID) == nil then -- Check if provided SID is number
-		return "[ServerSystem]: Error 103, invalid SID, SID can't be NIL and must be a number."
+		return 000100
 	end
 	local ServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..SID) -- Connects to datastore using SID provided by server
 	local success, Data = pcall(function()
@@ -113,7 +118,7 @@ function ServerSystem.GetServerData(SID)
 	end)
 	if success then
 		if not Data then -- Cheks if server exists
-			return "[ServerSystem]: Error 100, server does not exist." -- If server doesn't exist return error 100
+			return 000100 -- If server doesn't exist return error 100
 		else
 			return Data
 		end
@@ -125,7 +130,7 @@ end
 --]]
 function ServerSystem.GetCustomData(SID)
 	if SID == nil or tonumber(SID) == nil then -- Check if provided SID is number
-		return "[ServerSystem]: Error 103, invalid SID, SID can't be NIL and must be a number."
+		return 000103
 	end
 	local ServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..SID) -- Connects to datastore using SID provided by server
 	local success, Data = pcall(function()
@@ -133,23 +138,46 @@ function ServerSystem.GetCustomData(SID)
 	end)
 	if success then
 		if not Data then -- Cheks if server exists
-			return "[ServerSystem]: Error 100, server does not exist." -- If server doesn't exist return error 100
+			return 000100 -- If server doesn't exist return error 100
 		else
 			return Data
 		end
 	end
 end
 
-function ServerSystem.Connect(PlayerID, SID)
+--[[
+[4] Connecting player to server
+--]]
+function ServerSystem.Connect(PlayerID, SID, Password, CustomLoadingScreen)
 	local ServerStats = DataStoreService:GetDataStore("ServerSystem_Server_"..SID)
 	local success, ServerData = pcall(function()
 		return ServerStats:GetAsync("ServerData")
 	end)
 	if success then
 		if not ServerData then -- Cheks if server exists
-			return "[ServerSystem]: Error 100, server does not exist." -- If server doesn't exist return error 100
+			return 000100 -- If server doesn't exist return error 100
 		end
 	end
+	if ServerData["Password"] ~= 0 and ServerData["Password"] ~= Password then -- Checks if password ~= nil if not nil it checks if password is correct
+		return 000103
+	end
+	local RESERVEID = false -- Ignore this
+	if ServerData["Active"] == false then -- Checks if server allready exists, if it doesn't it creates new server
+		RESERVEID = TeleportService:ReserveServer(ServerData["PlaceId"])
+		local success, ServerData = pcall(function()
+			ServerData["Active"] = RESERVEID -- Sets RESERVEID as new Active value in dictionary
+			return ServerStats:SetAsync("ServerData", ServerData) -- Updated dictionary
+		end)
+	else
+		RESERVEID = ServerData["Active"] -- This means the server allready exists, it changes it soo TeleportService can use it
+	end
+	local Player = game.Players:GetPlayerByUserId(PlayerID) -- Find the player
+	local TempTable = {Player} -- We can only teleport players inside table
+	TeleportService:TeleportToPrivateServer(ServerData["PlaceId"], RESERVEID, TempTable)
+end
+
+function ServerSystem.Shutdown()
+	-- In progress
 end
 
 return ServerSystem
