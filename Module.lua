@@ -1,4 +1,60 @@
-local ServerStats = DataStoreService:GetDataStore("ServerSystem_ServerSTATS") -- Connects to global data datastore (Stores server number of servers and other cool stuff)
+--[[
+  _      _             _     _   _____ _          _ 
+ | |    (_)           (_)   | | |  __ (_)        | |
+ | |     _  __ _ _   _ _  __| | | |__) |__  _____| |
+ | |    | |/ _` | | | | |/ _` | |  ___/ \ \/ / _ \ |
+ | |____| | (_| | |_| | | (_| | | |   | |>  <  __/ |
+ |______|_|\__, |\__,_|_|\__,_| |_|   |_/_/\_\___|_|
+              | |                                   
+              |_|     
+  _____       _                      _   _           
+ |_   _|     | |                    | | (_)          
+   | |  _ __ | |_ ___ _ __ __ _  ___| |_ ___   _____ 
+   | | | '_ \| __/ _ \ '__/ _` |/ __| __| \ \ / / _ \
+  _| |_| | | | ||  __/ | | (_| | (__| |_| |\ V /  __/
+ |_____|_| |_|\__\___|_|  \__,_|\___|\__|_| \_/ \___|
+                                                            
+MIT License
+
+Copyright © 2021 LiquidPixel Interactive
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.                       
+--]]
+
+-- ** Getting services 
+local HttpService = game:GetService("HttpService")
+local DataStoreService = game:GetService("DataStoreService")
+
+--[[ 
+List of functions:
+ [1] Server creating
+--]]
+
+local ServerSystem = {}
+
+
+--[[
+[1] Server creating
+--]]
+local SID = 0
+function ServerSystem.Create(name, description, ownerid, maxslots, placeID, password, CustomData) -- Creating new server, make sure this is not spamable, provide your own cooldown!!!
+	local ServerStats = DataStoreService:GetDataStore("ServerSystem_ServerSTATS") -- Connects to global data datastore (Stores server number of servers and other cool stuff)
 	local success, ServerNumber = pcall(function() -- Soo everything doesn't error when datastore stops working.
 		return ServerStats:GetAsync("ServerNumber")
 	end)
@@ -33,3 +89,26 @@ local ServerStats = DataStoreService:GetDataStore("ServerSystem_ServerSTATS") --
 	local success, err = pcall(function()
 		NewServerDatastore:SetAsync("CustomData", CustomData) -- Custom boolean/table/dictionary from input, you can store whatever you like here, you can access this by using name "ServerSystem_Server_<SID>" and key "CustomData" in datastore editor.
 	end)
+end
+
+function ServerSystem.GetServerData(SID)
+	local ServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..SID) -- Connects to datastore using SID provided by server
+	local success, Data = pcall(function()
+		return ServerDatastore:GetAsync("ServerData")
+	end)
+	if success then
+		return Data -- Returns data
+	end
+end
+
+function ServerSystem.GetCustomData(SID)
+	local ServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..SID) -- Connects to datastore using SID provided by server
+	local success, Data = pcall(function()
+		return ServerDatastore:GetAsync("CustomData")
+	end)
+	if success then
+		return Data -- Returns custom data
+	end
+end
+
+return ServerSystem
