@@ -58,7 +58,6 @@ local ServerSystem = {}
 [1] Server creating
 Creates new server
 --]]
-local SID = 0
 function ServerSystem.Create(name, description, ownerid, maxslots, placeID, password, CustomData) -- Creating new server, make sure this is not spamable, provide your own cooldown!!!
 	local ServerStats = DataStoreService:GetDataStore("ServerSystem_ServerSTATS") -- Connects to global data datastore (Stores server number of servers and other cool stuff)
 	local success, ServerNumber = pcall(function() -- Soo everything doesn't error when datastore stops working.
@@ -94,8 +93,8 @@ function ServerSystem.Create(name, description, ownerid, maxslots, placeID, pass
 	end)
 	local success, err = pcall(function()
 		NewServerDatastore:SetAsync("CustomData", CustomData) -- Custom boolean/table/dictionary from input, you can store whatever you like here, you can access this by using name "ServerSystem_Server_<SID>" and key "CustomData" in datastore editor.
-		return 
 	end)
+	return ServerNumber
 end
 
 --[[
