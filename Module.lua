@@ -59,6 +59,9 @@ local ServerSystem = {}
 Creates new server
 --]]
 function ServerSystem.Create(name, description, ownerid, maxslots, placeID, password, CustomData) -- Creating new server, make sure this is not spamable, provide your own cooldown!!!
+	if name or description or ownerid or maxslots or placeID == nil then
+		return "[ServerSystem]: Error 101, missing arguments when creating server"
+	end
 	local ServerStats = DataStoreService:GetDataStore("ServerSystem_ServerSTATS") -- Connects to global data datastore (Stores server number of servers and other cool stuff)
 	local success, ServerNumber = pcall(function() -- Soo everything doesn't error when datastore stops working.
 		return ServerStats:GetAsync("ServerNumber")
@@ -75,7 +78,7 @@ function ServerSystem.Create(name, description, ownerid, maxslots, placeID, pass
 	local NewServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..ServerNumber) -- Connects to our new datastore using our ServerNumber (SID)
 	local OfficialInfo = { -- Information needed for the servers to work, don't mess with this.
 		Active = false, -- To tell people if server if active, if so change this with server access code.
-		ServerID = SID,
+		ServerID = ServerNumber,
 		PlaceId = placeID,
 		Password = password,
 		Name = name,
@@ -101,12 +104,19 @@ end
 [2] Getting server data
 --]]
 function ServerSystem.GetServerData(SID)
+	if SID == nil or tonumber(SID) == nil then -- Check if provided SID is number
+		return "[ServerSystem]: Error 103, invalid SID, SID can't be NIL and must be a number."
+	end
 	local ServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..SID) -- Connects to datastore using SID provided by server
 	local success, Data = pcall(function()
 		return ServerDatastore:GetAsync("ServerData")
 	end)
 	if success then
-		return Data -- Returns data
+		if not Data then -- Cheks if server exists
+			return "[ServerSystem]: Error 100, server does not exist." -- If server doesn't exist return error 100
+		else
+			return Data
+		end
 	end
 end
 
@@ -114,12 +124,31 @@ end
 [3] Getting custom data
 --]]
 function ServerSystem.GetCustomData(SID)
+	if SID == nil or tonumber(SID) == nil then -- Check if provided SID is number
+		return "[ServerSystem]: Error 103, invalid SID, SID can't be NIL and must be a number."
+	end
 	local ServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..SID) -- Connects to datastore using SID provided by server
 	local success, Data = pcall(function()
 		return ServerDatastore:GetAsync("CustomData")
 	end)
 	if success then
-		return Data -- Returns custom data
+		if not Data then -- Cheks if server exists
+			return "[ServerSystem]: Error 100, server does not exist." -- If server doesn't exist return error 100
+		else
+			return Data
+		end
+	end
+end
+
+function ServerSystem.Connect(PlayerID, SID)
+	local ServerStats = DataStoreService:GetDataStore("ServerSystem_Server_"..SID)
+	local success, ServerData = pcall(function()
+		return ServerStats:GetAsync("ServerData")
+	end)
+	if success then
+		if not ServerData then -- Cheks if server exists
+			return "[ServerSystem]: Error 100, server does not exist." -- If server doesn't exist return error 100
+		end
 	end
 end
 
