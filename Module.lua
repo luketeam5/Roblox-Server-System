@@ -13,7 +13,10 @@
    | | | '_ \| __/ _ \ '__/ _` |/ __| __| \ \ / / _ \
   _| |_| | | | ||  __/ | | (_| | (__| |_| |\ V /  __/
  |_____|_| |_|\__\___|_|  \__,_|\___|\__|_| \_/ \___|
-                                                            
+                                                     
+Created by luketeam5, Github: https://github.com/luketeam5/Roblox-Server-System
+
+Licensed under:       
 MIT License
 
 Copyright © 2021 LiquidPixel Interactive
@@ -44,6 +47,8 @@ local DataStoreService = game:GetService("DataStoreService")
 --[[ 
 List of functions:
  [1] Server creating
+ [2] Getting server data
+ [3] Getting custom data
 --]]
 
 local ServerSystem = {}
@@ -51,6 +56,7 @@ local ServerSystem = {}
 
 --[[
 [1] Server creating
+Creates new server
 --]]
 local SID = 0
 function ServerSystem.Create(name, description, ownerid, maxslots, placeID, password, CustomData) -- Creating new server, make sure this is not spamable, provide your own cooldown!!!
@@ -88,9 +94,13 @@ function ServerSystem.Create(name, description, ownerid, maxslots, placeID, pass
 	end)
 	local success, err = pcall(function()
 		NewServerDatastore:SetAsync("CustomData", CustomData) -- Custom boolean/table/dictionary from input, you can store whatever you like here, you can access this by using name "ServerSystem_Server_<SID>" and key "CustomData" in datastore editor.
+		return 
 	end)
 end
 
+--[[
+[2] Getting server data
+--]]
 function ServerSystem.GetServerData(SID)
 	local ServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..SID) -- Connects to datastore using SID provided by server
 	local success, Data = pcall(function()
@@ -101,6 +111,9 @@ function ServerSystem.GetServerData(SID)
 	end
 end
 
+--[[
+[3] Getting custom data
+--]]
 function ServerSystem.GetCustomData(SID)
 	local ServerDatastore = DataStoreService:GetDataStore("ServerSystem_Server_"..SID) -- Connects to datastore using SID provided by server
 	local success, Data = pcall(function()
